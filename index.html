@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="description" content="CPUと遊べる練習用テキサスホールデム。プロの考え方で1手ごとに振り返れます。本物のお金は賭けません。"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
 <title>夜更かしホールデム</title>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WYSSX84YMK"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-WYSSX84YMK');</script>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1402,6 +1404,7 @@ function nextHand(){
   deal();
 }
 /* ---- 共通 ---- */
+function track(n,p){try{window.gtag&&gtag('event',n,p||{})}catch(e){}}
 function today(off=0){const d=new Date(Date.now()-off*864e5);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function day(){const k=today();return stats.days[k]||(stats.days[k]={d:0,good:0,hands:0,won:0,q:0,qok:0})}
 function toast(t){$('#status').textContent=t}
@@ -1441,7 +1444,7 @@ function drawGacha(){
   drawLooks();
 }
 function gachaOnce(){
-  const c=stats.col,l=gachaPick(),dup=!!c.own[l.id];
+  const c=stats.col,l=gachaPick(),dup=!!c.own[l.id];track('gacha_pull',{rarity:l.r||'N'});
   if(dup){c.shards++;if(c.shards>=5){c.shards-=5;c.tickets++}}else c.own[l.id]=1;
   $('#gRes').innerHTML=`<div class="gItem ${l.r}"><span class="rr">${l.r}</span><br><b>${esc(l.name)}</b><br><small>${CATNAME[l.cat]}${dup?' ・ かけら+1':' ・ 新しく入手'}</small></div>`;
   $('#gRes').firstChild.animate([{transform:'scale(.2) rotate(-12deg)',opacity:0},{transform:'scale(1.15)',opacity:1,offset:.7},{transform:'none'}],{duration:reduced.matches?1:520});
@@ -1459,7 +1462,7 @@ function openBonus(){
   $('#bnTxt').innerHTML=`連続${streak}日目です。チップ1,000とガチャ券${1+extra}枚を受け取れます。${extra?'<br>7日連続のおまけで券が2枚増えています。':''}`;
   $('#bnAd').hidden=!adsOn;$('#dBonus').showModal();
 }
-function takeBonus(mul){
+function takeBonus(mul){track('daily_bonus',{ad:mul>1?1:0});
   const p=openBonus.pending;if(!p)return;openBonus.pending=null;
   const b=stats.col.bonus;b.last=today();b.streak=p.streak;
   if(!G.tour)G.players[0].chips+=p.chips*mul;stats.col.tickets+=p.tix*mul;
@@ -1566,7 +1569,7 @@ $('#qz').addEventListener('click',e=>{
   if(b&&QA&&!QA.answered){
     QA.answered=1;
     const k=b.dataset.k,a=k==='raise'||k==='bet'?{type:'raise',to:QA.to||0}:{type:k},m=gradeMove(QA,a),ok=m.g!=='bad',q=stats.quiz,dd=day();
-    q.n++;dd.q++;if(ok){q.ok++;dd.qok++;q.streak++;q.best=Math.max(q.best,q.streak)}else q.streak=0;
+    q.n++;dd.q++;track('quiz_answer',{correct:ok?1:0});if(ok){q.ok++;dd.qok++;q.streak++;q.best=Math.max(q.best,q.streak)}else q.streak=0;
     let gift='';if(ok&&q.ok%5===0){stats.col.tickets++;gift='5問正解したので、ガチャ券を1枚もらいました。'}
     document.querySelectorAll('#qBtns button').forEach(x=>x.disabled=true);
     $('#qOut').innerHTML=`<div class="qRes ${ok?'ok':'ng'}"><b>${m.g==='good'?'正解':ok?'正解(どちらも選べる場面)':'惜しい'}</b> ・ プロなら: ${esc(advLabel(QA))}
@@ -1598,7 +1601,7 @@ function setBlinds(){[SB,BB]=G.tour?TOUR_LV[G.tour.level]:[10,20]}
 $('#bTour').onclick=()=>{
   if(G.tour){fxText('トーナメント中',`Lv${G.tour.level+1}`);return}
   runId++;humanResolve=null;closeRaise();
-  cashG=G;G=makeTable(S.cpus,S.names);G.tour={level:0,hands:0,done:false};setBlinds();
+  cashG=G;G=makeTable(S.cpus,S.names);G.tour={level:0,hands:0,done:false};track('tournament_start');setBlinds();
   buildSeats();buildBoard();newHand(G);render();save();play();
   fxText('トーナメント開始',`${S.cpus+1}人 ・ ${TOUR_EVERY}ハンドごとにブラインド上昇`);
 };
@@ -1636,7 +1639,7 @@ $('#rgTabs').onclick=e=>{const b=e.target.closest('button');if(b){rgPos=b.datase
 drawRange();
 {const SRC=[['_9eDNDASQpo','Mastering the Fundamentals: Preflop Strategy','Jonathan Little'],['Pg6IwWAMeR8','How to Get Better at 6max Poker','BlackRain79'],['3HtVVTSDRug','Mastering The Fundamentals: 3-Bet Pots','Jonathan Little'],['o0xTHdx6n2o','How to 3-Bet Like a Pro','Upswing Poker'],['fFR4tqTyT7E','Mastering The Fundamentals: Continuation Betting','Jonathan Little'],['Zc9ap3PGyew','My Flop C-Bet Strategy','Phil Galfond'],['qEzeQ7-JjsQ','STOP C-Betting in These 5 Situations','Lucid Poker'],['bQCZ2jUD8MI','How to Play the Most Dangerous Board Textures','GTO Wizard'],['wSkvMNcNqdY','Choosing the Perfect Bet Size on the Flop','Jonathan Little'],['Y4X4WI7uras','When to Bet the Turn','Upswing Poker'],['bqA7TUecdSQ','5 Tips for Playing the River','Upswing Poker'],['PoGN-CSMQW0','How To Bluff PERFECTLY','Jonathan Little'],['tu1Gknec1wc','How to Defend Your Big Blind','Upswing Poker'],['UUlRVyyRsok','5 Tips to CRUSH Weak, Passive Players!','Jonathan Little'],['RuZMlaX4_AQ','The Blueprint to Exploit Most Poker Players','Dan Cates'],['5eQ2k4SJOCo','POT ODDS & EQUITY In POKER','Jonathan Little'],['0m3FypX7Uk8','The Power of Position','Gripsed Poker'],['OU2ywmxuLS8','When To Shove? The PERFECT Short-Stack Strategy','Jonathan Little'],['QTMhuD0XEcY',"Top 5 Reasons You're Losing at Poker",'Daniel Negreanu'],['FqVaM_nfXvo','8 Habits Keeping Poker Beginners STUCK','BlackRain79']];
  $('#srcList').innerHTML=SRC.map(([id,t,c])=>`<li><a href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener" style="color:var(--brass)">${esc(t)}</a>(${esc(c)})</li>`).join('');}
-function deal(){
+function deal(){track('hand_play',{mode:G&&G.tour?'tour':'cash'});
   for(const p of G.players){
     if(p.chips>0||G.tour)continue;
     if(p.human)stats.rebuys++;
